@@ -46,3 +46,4 @@ out.to_csv("outputs/new_shipment_actions.csv", index=False)
 
 print("Scoring complete. Action distribution:")
 print(out["action"].value_counts().to_string())
+

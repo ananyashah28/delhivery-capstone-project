@@ -105,3 +105,4 @@ mismatches = hub_segments[hub_segments["segment"] != hub_segments["hub_tier"].ma
 mismatches.to_csv("outputs/tier_vs_segment_mismatch.csv", index=False)
 
 print(f"Part D segmentation complete. Hubs: {len(hub_segments)}. Mismatches detected: {len(mismatches)}.")
+
