@@ -90,3 +90,4 @@ def build_features(clean: pd.DataFrame, hubs: pd.DataFrame) -> pd.DataFrame:
     out["log_declared_value"] = np.log(out["declared_value_inr"])
     
     return out
+
