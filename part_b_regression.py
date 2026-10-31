@@ -159,3 +159,4 @@ metrics_df = pd.DataFrame(metrics_rows)[["model", "split", "MAE", "MSE", "RMSE",
 metrics_df.to_csv("outputs/part_b_metrics.csv", index=False)
 
 print(f"Part B complete. Best tree depth: {best_depth}. Ranked candidates: {ranked_candidates}. Final model: {final_name}.")
+
