@@ -30,7 +30,13 @@ pip install -r requirements.txt
 ```
 
 ### 2. Execution Pipeline
-Run the scripts in strict sequential order from the repository root:
+You can execute the entire end-to-end pipeline with a single master command:
+
+```bash
+python run_pipeline.py
+```
+
+Alternatively, you can run the scripts in individual sequential order from the repository root:
 
 ```bash
 python generate_data.py          # Generates data/hubs.csv, data/raw_shipments.csv, data/new_shipments.csv
