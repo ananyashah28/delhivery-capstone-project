@@ -94,30 +94,30 @@ The raw historical export contains 1,224 rows. After dropping 24 exact duplicate
 Regression models predict the exact delivery transit duration (`delivery_hours`) at dispatch. Evaluated on an 840/180/180 split (70% Train, 15% Validation, 15% Test).
 
 ### Data Leakage Safeguards (`outputs/part_b_checks.csv`)
-The `StandardScaler` was fitted strictly on the 840 training rows. The scaled training columns show a maximum absolute mean of **0.0000** (unrounded $\approx 4 \times 10^{-16} < 10^{-9}$), whereas the transformed test set columns show a maximum absolute mean of **0.2187**, proving the test set was completely unseen during feature scaling.
+The `StandardScaler` was fitted strictly on the 840 training rows. The scaled training columns show a maximum absolute mean of **0.0000** (unrounded ~ 4e-16 < 1e-9), whereas the transformed test set columns show a maximum absolute mean of **0.2187**, proving the test set was completely unseen during feature scaling.
 
 ### Diagnostics & Experiments
-- **Mean Baseline:** Predicting the training target mean for every validation row yields $R^2 = \mathbf{-0.0212}$ (RMSE = 18.8552 hrs). An $R^2 \le 0$ indicates that predicting a static average explains zero target variance; all candidate models substantially outperform this baseline.
+- **Mean Baseline:** Predicting the training target mean for every validation row yields R² = **-0.0212** (RMSE = 18.8552 hrs). An R² <= 0 indicates that predicting a static average explains zero target variance; all candidate models substantially outperform this baseline.
 - **Tree-Depth Bias-Variance Diagnostic (`outputs/part_b_tree_depth.csv`):**
   - Depth 1 (High Bias / Underfitting): Train RMSE = 11.6334 hrs, Val RMSE = 12.1324 hrs (gap = 0.4990 hrs). Both errors are high.
   - Unlimited Depth (High Variance / Overfitting): Train RMSE = 0.0000 hrs, Val RMSE = 7.8368 hrs (gap = 7.8368 hrs). Overfits training noise.
   - **Optimal Depth:** Depth **6** minimizes validation error (Val RMSE = **6.2796 hrs**, Train RMSE = 4.7114 hrs, gap = 1.5682 hrs), improving upon Depth 1 by **5.8528 hrs**.
 - **Gradient Boosting Learning Rate (`outputs/part_b_gb_learning_rate.csv`):**
-  - $\text{lr} = 0.01$: Val RMSE = 10.0018 hrs, Val $R^2 = \mathbf{0.7127}$ (too conservative; underfits within 100 boosting stages).
-  - $\text{lr} = 0.10$: Val RMSE = 4.9165 hrs, Val $R^2 = \mathbf{0.9306}$ (optimal convergence balance).
-  - $\text{lr} = 1.00$: Val RMSE = 7.3701 hrs, Val $R^2 = \mathbf{0.8440}$ (overshoots loss minima and overfits).
-  - Validates the required condition: $R^2(0.10) > R^2(1.00) > R^2(0.01)$.
+  - `lr = 0.01`: Val RMSE = 10.0018 hrs, Val R² = **0.7127** (too conservative; underfits within 100 boosting stages).
+  - `lr = 0.10`: Val RMSE = 4.9165 hrs, Val R² = **0.9306** (optimal convergence balance).
+  - `lr = 1.00`: Val RMSE = 7.3701 hrs, Val R² = **0.8440** (overshoots loss minima and overfits).
+  - Validates the required condition: R²(0.10) > R²(1.00) > R²(0.01).
 
 ### Model Comparison & Shipping Recommendation (`outputs/part_b_metrics.csv`, `outputs/part_b_cv.csv`)
 Validation metrics across candidates:
-1. `linear_regression`: Val RMSE = **4.8912 hrs**, MAE = 3.9222 hrs, $R^2 = \mathbf{0.9313}$
-2. `gradient_boosting`: Val RMSE = **4.9165 hrs**, MAE = 3.9166 hrs, $R^2 = \mathbf{0.9306}$
-3. `random_forest`: Val RMSE = **5.5095 hrs**, MAE = 4.2882 hrs, $R^2 = \mathbf{0.9128}$
-4. `decision_tree`: Val RMSE = **6.2796 hrs**, MAE = 5.0971 hrs, $R^2 = \mathbf{0.8867}$
+1. `linear_regression`: Val RMSE = **4.8912 hrs**, MAE = 3.9222 hrs, R² = **0.9313**
+2. `gradient_boosting`: Val RMSE = **4.9165 hrs**, MAE = 3.9166 hrs, R² = **0.9306**
+3. `random_forest`: Val RMSE = **5.5095 hrs**, MAE = 4.2882 hrs, R² = **0.9128**
+4. `decision_tree`: Val RMSE = **6.2796 hrs**, MAE = 5.0971 hrs, R² = **0.8867**
 
 **5-Fold Cross Validation on Train+Val (1,020 rows):**
-- `gradient_boosting`: Mean $R^2 = \mathbf{0.9353}$ (std = 0.0045)
-- `linear_regression`: Mean $R^2 = \mathbf{0.9261}$ (std = 0.0048)
+- `gradient_boosting`: Mean R² = **0.9353** (std = 0.0045)
+- `linear_regression`: Mean R² = **0.9261** (std = 0.0048)
 
 **Shipping Decision Justification:**  
 While Linear Regression marginally edged Gradient Boosting on the single 180-row validation slice by 0.0253 hrs, **I recommend shipping Gradient Boosting in production**. 5-fold CV aggregates performance across all 1,020 rows, reducing single-split variance. Furthermore, the true underlying delivery dynamics include severe non-linear interactions—specifically festive sale spikes on Express lanes (+12 hrs) and monsoon rain on long lanes > 400 km (+8 hrs)—which decision tree ensembles natively capture without manual interaction engineering.
@@ -126,7 +126,7 @@ While Linear Regression marginally edged Gradient Boosting on the single 180-row
 Scored once on the test set using the pre-designated validation winner (`linear_regression`):
 - **Test RMSE:** **4.5235 hrs**
 - **Test MAE:** **3.5671 hrs**
-- **Test $R^2$:** **0.9493** (well above the $\ge 0.88$ pass band).
+- **Test R²:** **0.9493** (well above the >= 0.88 pass band).
 
 ---
 
@@ -141,25 +141,25 @@ Stratified split maintains exact class balance across partitions:
 - **Blind Baseline (`outputs/part_c_models.csv`):** Predicting "not delayed" for all parcels yields an accuracy of **0.7667** (TN=138, FP=0, FN=42, TP=0), with Precision = 0.0000, Recall = **0.0000**, and F1 = 0.0000. Despite misleadingly high accuracy, it catches zero delays, making it functionally useless for proactive operations.
 - **Noise Column Elimination (`outputs/part_c_feature_scores.csv`):**
   - The 5 bookkeeping noise columns (`label_print_batch`, `scanner_build_no`, `tape_roll_no`, `sticker_serial_mod`, `shelf_slot_no`) accounted for **22.44%** of the untuned Random Forest's feature importance despite carrying zero causal signal.
-  - By ANOVA F-score, all five noise columns ranked &ge; 8 with F-scores $< 5.0$ (highest noise score: 4.5847).
+  - By ANOVA F-score, all five noise columns ranked >= 8 with F-scores < 5.0 (highest noise score: 4.5847).
   - In contrast, the top 7 signal features exhibited F-scores between **36.7281** and **389.2131**: `distance_km` (389.21), `hub_tier` (155.35), `hub_daily_capacity` (144.13), `n_stops` (125.48), `promised_hours` (84.42), `rain_flag` (53.03), and `sale_event_flag` (36.73).
-- **Optimal Feature Count $k$ (`outputs/part_c_selectk.csv`):**
-  - $k=5$: Val F1 = 0.6988 (drops legitimate signal)
-  - **$k=7$**: Val F1 = **0.8333** (peak signal-to-noise ratio)
-  - $k=10$: Val F1 = 0.7857
-  - $k=12$: Val F1 = 0.8049
-  - $k=17$: Val F1 = 0.7848 (all features, noise dilutes splits)
+- **Optimal Feature Count k (`outputs/part_c_selectk.csv`):**
+  - k = 5: Val F1 = 0.6988 (drops legitimate signal)
+  - **k = 7**: Val F1 = **0.8333** (peak signal-to-noise ratio)
+  - k = 10: Val F1 = 0.7857
+  - k = 12: Val F1 = 0.8049
+  - k = 17: Val F1 = 0.7848 (all features, noise dilutes splits)
 
 ### Hyperparameter Tuning Analysis (`outputs/part_c_tuning.csv`)
 - `grid_search` (27 candidates, 135 fits): Best CV Acc = 0.8952, Val F1 = **0.7750**
 - `randomized_search` (9 candidates, 45 fits): Best CV Acc = 0.8905, Val F1 = **0.7848**
 - `default_forest_same_7_features` (100 trees, no depth limit, min_samples_leaf=1): Val F1 = **0.8333**
 
-**Insight:** Extensive hyperparameter grid search failed to beat the default Random Forest on validation. On a 180-sample validation set containing only 42 delayed parcels, a swing of just 1 or 2 parcels alters F1 by $\approx 0.025$, swamping the 0.0047 difference in CV accuracy. Tuning on small validation sets risks fitting validation noise, whereas a default forest restricted to the 7 validated signal features proves highly generalizable.
+**Insight:** Extensive hyperparameter grid search failed to beat the default Random Forest on validation. On a 180-sample validation set containing only 42 delayed parcels, a swing of just 1 or 2 parcels alters F1 by ~ 0.025, swamping the 0.0047 difference in CV accuracy. Tuning on small validation sets risks fitting validation noise, whereas a default forest restricted to the 7 validated signal features proves highly generalizable.
 
 ### Alert Threshold Optimization (`outputs/part_c_thresholds.csv`)
-The operational cost of a missed delay (customer churn, breach penalty) far exceeds an unnecessary proactive notification. The business rule dictates selecting the highest probability threshold $t$ achieving **$\text{Validation Recall} \ge 0.80$**:
-- Threshold 0.6: Recall = 0.7619 (fails $0.80$ threshold)
+The operational cost of a missed delay (customer churn, breach penalty) far exceeds an unnecessary proactive notification. The business rule dictates selecting the highest probability threshold t achieving **Validation Recall >= 0.80**:
+- Threshold 0.6: Recall = 0.7619 (fails 0.80 threshold)
 - **Threshold 0.5**: Recall = **0.8333** (catches 35 of 42 delays), Precision = **0.7955**, F1 = **0.8140**
 - Threshold 0.4: Recall = 0.8810, Precision = 0.7400
 - Threshold 0.1: Recall = 0.9762, Precision = 0.4824 (floods call centers with false alarms)
@@ -210,21 +210,21 @@ Applying `predict_delay.py` to [`data/new_shipments.csv`](file:///c:/Users/s_dev
 - **Escalate to Hub Manager:** **6 parcels** (12.5%) — flagged for delay in high-risk Escalate hubs (e.g. HUB24 Agartala, HUB18 Ranchi, HUB19 Guwahati).
 - **Proactive Customer Call:** **2 parcels** (4.2%) — flagged for delay in Watch/Standard hubs (HUB22 Dehradun).
 
-### 5. Why $K = 3$ is Retained
+### 5. Why K = 3 is Retained
 Across-to-within Euclidean distance separation ratios ([`outputs/part_d_separation.csv`](file:///c:/Users/s_dev/Delhivery-capstone-project/outputs/part_d_separation.csv)):
-- $K=2$: Ratio = 2.8940 (sizes `15-9`)
-- **$K=3$**: Ratio = **5.3928** (sizes `9-8-7`, separation jump $+2.4988$)
-- $K=4$: Ratio = 6.3047 (sizes `8-7-5-4`, separation jump $+0.9119$)
-- $K=5$: Ratio = 6.8866 (sizes `8-7-4-3-2`, separation jump $+0.5819$)
+- K=2: Ratio = 2.8940 (sizes `15-9`)
+- **K=3**: Ratio = **5.3928** (sizes `9-8-7`, separation jump +2.4988)
+- K=4: Ratio = 6.3047 (sizes `8-7-5-4`, separation jump +0.9119)
+- K=5: Ratio = 6.8866 (sizes `8-7-4-3-2`, separation jump +0.5819)
 
-While $K=4$ and $K=5$ marginally increase mathematical separation, they fragment hubs into clusters containing fewer than 6 members (e.g. clusters of size 4, 3, or 2). From an organizational standpoint, operating teams cannot maintain distinct logistics playbooks for 2 or 3 hubs. $K=3$ captures the dominant inflection point in separation while yielding three robust, actionable tiers.
+While K=4 and K=5 marginally increase mathematical separation, they fragment hubs into clusters containing fewer than 6 members (e.g. clusters of size 4, 3, or 2). From an organizational standpoint, operating teams cannot maintain distinct logistics playbooks for 2 or 3 hubs. K=3 captures the dominant inflection point in separation while yielding three robust, actionable tiers.
 
 ---
 
 ## Production plan
 
 ### (a) Production-Readiness Mapping
-1. **Accuracy:** Validated on held-out test data with zero leakage ($R^2 = 0.9493$ for regression; F1 = 0.7209, Accuracy = 0.8667 for classification).
+1. **Accuracy:** Validated on held-out test data with zero leakage (R² = 0.9493 for regression; F1 = 0.7209, Accuracy = 0.8667 for classification).
 2. **Reliability:** `clean_shipments` robustly resolves missing fields, malformed strings, sentinel scanner errors, and unseen payment categories without raising runtime exceptions.
 3. **Reproducibility:** Seeded executions (`random_state=42`), pinned `requirements.txt`, and automated re-packaging in `package_model.py`.
 4. **Performance (Speed):** The 7-feature Random Forest scores batches in milliseconds via vectorized matrix transforms in `predict_delay.py`.
@@ -235,8 +235,8 @@ While $K=4$ and $K=5$ marginally increase mathematical separation, they fragment
 ### (b) Monitoring Metrics & Actionable Triggers
 | Metric | Baseline | Alert Trigger | Corrective Action |
 | :--- | :--- | :--- | :--- |
-| **Weekly Historical Delay Rate** | 0.2317 | Delay rate $< 0.17$ or $> 0.29$ for 2 consecutive weeks | Inspect regional network for macroscopic disruption (e.g. regional floods, strikes). |
-| **Weekly Flagged Parcel Share** | 0.2500 | Flagged share $< 0.15$ or $> 0.35$ | Check input data distributions for sensor drift or feature calculation errors. |
+| **Weekly Historical Delay Rate** | 0.2317 | Delay rate < 0.17 or > 0.29 for 2 consecutive weeks | Inspect regional network for macroscopic disruption (e.g. regional floods, strikes). |
+| **Weekly Flagged Parcel Share** | 0.2500 | Flagged share < 0.15 or > 0.35 | Check input data distributions for sensor drift or feature calculation errors. |
 | **Rolling 4-Week Realized Recall** | 0.7561 | Recall drops below **0.6500** (min. 40 delayed parcels) | Immediate model re-training and threshold re-calibration. |
 | **Missing Feature Rate** | ~3.0% (distance) | Missingness exceeds **10.0%** in any core feature | Escalate to data engineering; median imputation dominance degrades predictions. |
 
@@ -254,10 +254,11 @@ While $K=4$ and $K=5$ marginally increase mathematical separation, they fragment
 1. **Synthetic Data Realism:**  
    The underlying data is synthetically generated via fixed parametric distributions (e.g. log-normal weights, linear penalties). Real-world logistics data contains non-linear traffic bottlenecks, multi-day weather events, vehicle breakdowns, and regional festival spikes that will exhibit higher variance than synthetic benchmarks.
 2. **Small Test Sample Size:**  
-   The held-out test partition comprises 180 shipments with only 41 true delays. At this sample size, a single parcel outcome swings test recall by $\approx 2.4\%$. While test metrics fall within expected statistical tolerance, larger observational test sets are required to narrow confidence intervals.
+   The held-out test partition comprises 180 shipments with only 41 true delays. At this sample size, a single parcel outcome swings test recall by ~ 2.4%. While test metrics fall within expected statistical tolerance, larger observational test sets are required to narrow confidence intervals.
 3. **Single-Split Threshold Sensitivity:**  
-   The operational threshold ($t = 0.5$) and optimal feature set ($k = 7$) were tuned on a single 180-row validation partition. Although cross-validated tuning verified general model stability, slight threshold drift ($\pm 0.05$) may occur across alternate temporal validation splits.
+   The operational threshold (t = 0.5) and optimal feature set (k = 7) were tuned on a single 180-row validation partition. Although cross-validated tuning verified general model stability, slight threshold drift (+/- 0.05) may occur across alternate temporal validation splits.
 4. **Validation vs. Cross-Validation Model Divergence:**  
    In Part B, Linear Regression won validation by 0.025 hrs, while 5-fold CV proved Gradient Boosting superior across the dataset. Following pre-committed project evaluation rules, Linear Regression was scored on test, though Gradient Boosting remains the superior production design.
 5. **Hub Sample Granularity:**  
-   The 24 hubs were clustered based on historical averages of 50 parcels per hub (1,200 total shipments). For smaller regional hubs, 50 observations represent limited sample depth; K-Means cluster stability for $K \ge 4$ exhibits sensitivity to small local sample shifts.
+   The 24 hubs were clustered based on historical averages of 50 parcels per hub (1,200 total shipments). For smaller regional hubs, 50 observations represent limited sample depth; K-Means cluster stability for K >= 4 exhibits sensitivity to small local sample shifts.
+
