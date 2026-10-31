@@ -104,3 +104,4 @@ corr = numeric_cols.corr().round(4)
 corr.to_csv("outputs/part_a_correlations.csv")
 
 print(f"Part A complete: {len(table)} rows in modelling table; {int(table['is_delayed'].sum())} delayed parcels.")
+
