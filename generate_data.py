@@ -102,3 +102,4 @@ if __name__ == "__main__":
     new = new.drop(columns=["delivery_hours"])
     new.to_csv("data/new_shipments.csv", index=False)
     print(len(hubs), len(raw), len(new))
+
